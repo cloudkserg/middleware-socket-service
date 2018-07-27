@@ -7,12 +7,18 @@ const SocketServer = require('./services/SocketServer'),
 	Promise = require('bluebird'),
 	config = require('./config'),
 	bunyan = require('bunyan'),
+	mongoose = require('mongoose'),
   log = bunyan.createLogger({name: 'socketService.index'});
 
 
+mongoose.Promise = Promise;
+mongoose.connect(config.mongo.uri, {useMongoClient: true});
+
 
 const init = async () => {
-
+  mongoose.connection.on('disconnected', () => {
+    throw new Error('mongo disconnected!');
+  });
 
 	const httpServer = http.createServer(function(request, response) {
 			log.info(' Received request for ' + request.url);
@@ -51,7 +57,7 @@ const init = async () => {
 	});
 
 	server.on(server.OPEN_TYPE, function (data) {
-		await auth.initAuth(data.connectionId)
+		auth.initAuth(data.connectionId)
 	})
 
 	server.on(server.AUTH_TYPE, function (data) {
