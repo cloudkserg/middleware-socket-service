@@ -1,0 +1,32 @@
+{
+  "name": "middleware-socket-service",
+  "version": "1.0.0",
+  "description": "Middleware service for translate message from amqp to native sockets",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "http": "^0.0.0",
+    "level": "^4.0.0",
+    "lodash": "^4.17.10",
+    "uniqid": "^5.0.3",
+    "websocket": "^1.0.26"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "lint": "node ./node_modules/eslint/bin/eslint.js -c .eslintrc.js --ext .js --fix --ignore-path .eslintignore .",
+    "test": "node ./node_modules/mocha/bin/mocha -t 150000 tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chronobank/middleware-socket-service.git"
+  },
+  "author": "chronobank",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/chronobank/middleware-socket-service/issues"
+  },
+  "homepage": "https://github.com/chronobank/middleware-socket-service#readme"
+}
