@@ -23,9 +23,6 @@ class BindStore extends EventEmitter
     this.connections[key] = value;
   }
 
-  all() {
-    return this.connections;
-  }
 
 
   getAvailRoutings(routing) {
@@ -55,21 +52,46 @@ class BindStore extends EventEmitter
   }
 
 
+  addRevertBind(connectionId, routing) {
+    const routings = this.get(connectionId)
+    routings.push(routing)
+    this.set(connectionId, routings)      
+  }
+
+
   addBind(connectionId, routing) {
     const connections = this.get(routing);
-    if (connection.length === 0)
+    if (connections.length === 0)
       this.emit(ADD_BIND, routing);
 
     connections.push(connectionId);
     this.set(routing, connections);
+
+    this.addRevertBind(conectionId, routing)
   }
   
   delBindAll(delId) {
-    _.map(this.all(), (connectionIds, routing) => {
+    const routings = this.get(delId)
+    _.map(routings, (routing) => {
+      const connectionIds  = this.get(routing);
       const newConnectionIds = _.filter(connectionIds, connId => connId != delId);
       this.set(routing, newConnectionIds);
-      this.delRoutingIfNeeded(newConnectionIds);
+      this.delRoutingIfNeeded(newConnectionIds, routing);
     });
+
+    this.del(delId);
+  }
+
+  delRevertBind(connectionId, routing) {
+    const routings = this.get(connectionId);
+    if (routings.length === 0)
+      return
+
+    routings = _.filter(routings, r => r !== routing);
+    if (routings.length == 0)
+      this.del(connectionId);
+    else
+      this.set(connectionId, routings)
   }
 
   delBind(connectionId, routing) {
@@ -80,11 +102,13 @@ class BindStore extends EventEmitter
     connections = _.filter(connections, c => c !== connectionId);
     this.set(routing, connections)
     
-    this.delRoutingIfNeeded(connections);
+    this.delRevertBind(connectionId, routing);
+    this.delRoutingIfNeeded(connections, routing);
   }
 
-  delRoutingIfNeeded(connections) {
+  delRoutingIfNeeded(connections, routing) {
     if (connections.length == 0) 
+      this.del(routing);
       this.emit(DEL_BIND, routing);
   }
 }
