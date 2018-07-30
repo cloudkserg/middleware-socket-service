@@ -12,46 +12,80 @@ class BindStore extends EventEmitter
     super();
   }
 
+
+  get (key) {
+    if (!this.connections[key])
+      return this.connections[key]
+    return [];
+  }
+
+  set(key, value) {
+    this.connections[key] = value;
+  }
+
+  all() {
+    return this.connections;
+  }
+
+
+  getAvailRoutings(routing) {
+    const parts = routing.explode('.');
+
+    let buildPart = parts[0];
+    const beginRoutings = [routing, '*']   
+
+    return _.reduce(_.slice(parts, 1), (routings, part) => {
+      routings.push(`${buildPart}.*`)
+      buildPart = `${buildPart}.${part}`;
+
+      return routings
+    }, beginRoutings);
+  }
+
   getConnections(routing) {
-    return _.chain(connections).filter((c, r) => {
-      return (r === routing) || routing.match('/' + r + '/');
-    }).map((c, r) => { return c; }).value();
+    const groupConnections = _.map(this.getAvailRoutings(routing), this.get);
+
+    return _.reduce(groupConnections, (connections, group) => {
+      _.each(group, (connection) => {
+        if (!(_.has(connections, connection)))
+          connections.push(connection)
+      });
+      return connections;
+    }, []);
   }
 
 
   addBind(connectionId, routing) {
-    if (!this.connections[routing]) {
-      this.connections[routing] = []
+    const connections = this.get(routing);
+    if (connection.length === 0)
       this.emit(ADD_BIND, routing);
-    }
 
-	  this.connections[routing].push(connectionId);
+    connections.push(connectionId);
+    this.set(routing, connections);
   }
   
   delBindAll(delId) {
-    return _.reduce(this.connections, (newConnections, connectionIds, routing) => {
+    _.map(this.all(), (connectionIds, routing) => {
       const newConnectionIds = _.filter(connectionIds, connId => connId != delId);
-      if (newConnectionIds.length > 0) {
-        newConnections[routing] = newConnectionIds;
-      }
-      this.delRoutingIfNeeded(routing);
-      return newConnections;
-    }, {});
+      this.set(routing, newConnectionIds);
+      this.delRoutingIfNeeded(newConnectionIds);
+    });
   }
 
   delBind(connectionId, routing) {
-  	if (!this.connections[routing])
-	  	return
+    const connections = this.get(routing);
+    if (connection.length === 0)
+      return
 
-    this.connections[routing] = _.filter(this.connections[routing], c => c !== connectionId);
-    this.delRoutingIfNeeded(routing);
+    connections = _.filter(connections, c => c !== connectionId);
+    this.set(routing, connections)
+    
+    this.delRoutingIfNeeded(connections);
   }
 
-  delRoutingIfNeeded(routing) {
-    if (this.connections[routing].length == 0) {
-      delete this.connections[routing];
+  delRoutingIfNeeded(connections) {
+    if (connections.length == 0) 
       this.emit(DEL_BIND, routing);
-    }
   }
 }
 
