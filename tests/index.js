@@ -10,8 +10,8 @@ process.env.LOG_LEVEL = 'error';
 const config = require('../config'),
   models = require('../models'),
   spawn = require('child_process').spawn,
-  //fuzzTests = require('./fuzz'),
-  //performanceTests = require('./performance'),
+  fuzzTests = require('./fuzz'),
+  performanceTests = require('./performance'),
   featuresTests = require('./features'),
   //blockTests = require('./blocks'),
   Promise = require('bluebird'),
@@ -48,7 +48,7 @@ describe('core/socketService', function () {
 
   describe('performance', () => performanceTests(ctx));
 
-  // describe('fuzz', () => fuzzTests(ctx));
+  describe('fuzz', () => fuzzTests(ctx));
 
   describe('features', () => featuresTests(ctx));
 

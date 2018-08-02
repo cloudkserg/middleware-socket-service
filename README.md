@@ -25,9 +25,19 @@ that send auth message after 10 sec after open connection
 }
 ```
 where
-type = AUTH
-token = token from laborx profile service
 
+where
+| name | description |
+| ------ | ------ |
+| token | token from laborx profile service
+
+##### OK AUTH MESSAGE
+Client must get ok auth message after success authentification
+```
+{
+    ok: true
+}
+```
 
 ##### SUBSCRIBE MESSAGE
 
@@ -40,10 +50,10 @@ send message this format
     routing: 'app_eth.transaction.*'
 }
 ```
-
-where 
-type = SUBSCRIBE
-routing = name routingKey in amqpMessages
+where
+| name | description |
+| ------ | ------ |
+| routing | routingKey, as subscription channel mask
 
 ##### UNSUBSCRIBE MESSAGE
 
@@ -56,6 +66,11 @@ send message this format
     routing: 'app_eth.transaction.*'
 }
 ```
+
+where
+| name | description |
+| ------ | ------ |
+| routing | routingKey, as subscription channel mask
 
 ### How client get messages from service
 
@@ -72,9 +87,11 @@ Client get messages from this service as such format
 ```
 
 where
-routing - routingKey, as client send in connection before
-data - data from middleware for this routingKey
-[see appropriate middleware documentation]
+
+| name | description |
+| ------ | ------ |
+| routing | routingKey, as client send in connection before
+| data | data from middleware for this routingKey [see appropriate middleware documentation]
 
 
 ##### сonfigure your .env
@@ -102,6 +119,7 @@ The options are presented below:
 | RABBIT_EXCHANGE | name of exchange in rabbit that service connected
 | PROFILE_PREFIX | the prefix for profileModel(cache tokens from laborx) in mongodb
 | MONGO_URI | the URI string for mongo
+| LEVEL_DB | the path to file, where save all cache information of service
 
 License
 ----
