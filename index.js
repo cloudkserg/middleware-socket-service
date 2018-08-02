@@ -35,7 +35,7 @@ const init = async () => {
 
   const amqpServer = new AmqpServer(config.rabbit);
   const server = new SocketServer(httpServer);
-  const store = new BindStore();
+  const store = new BindStore(config.db);
   const auth = new AuthService(config.laborx);
 
 
@@ -95,6 +95,7 @@ const init = async () => {
     });
   });
 
+  await store.start();
   await amqpServer.start();
   await server.start();
 

@@ -4,6 +4,8 @@
  * @author Kirill Sergeev <cloudkserg11@gmail.com>
  */
 const EventEmitter = require('events'),
+  level = require('level'),
+  fs = require('fs');
   getAvailRoutings = require('../util/getAvailRoutings'),
   _ = require('lodash');
 
@@ -25,28 +27,37 @@ const bindFromRouting = (routing) => {
 
 class BindStore extends EventEmitter
 {
-  constructor () {
+  constructor (config) {
     super();
+    this._file = config.file;
     this.ADD_BIND = ADD_BIND;
     this.DEL_BIND = DEL_BIND;
-    this.db = {};
     this._binds = [];
+  }
+
+  async start () {
+    if (fs.existsSync(this._file)) 
+      fs.unlinkSync(this._file);
+    this.db = level(this._file);
   }
 
 
   async get (key) {
-    if (this.db[key])
-      return this.db[key];
-    return [];
+    return await new Promise((res, rej) => {
+      this.db.get(key, function (err, value) {
+        if (err)
+          err.notFound ? res([]) : rej(err);
+        res(value);
+      });
+    });
   }
 
   async set (key, value) {
-    this.db[key] = value;
+    await this.db.put(key, value);
   }
 
   async del (key) {
-    if (this.db[key])
-      delete this.db[key];
+    await this.db.del(key);
   }
 
   async add (key, value, beforeCreate) {

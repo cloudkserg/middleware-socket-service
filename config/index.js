@@ -5,7 +5,13 @@
  */
 
 require('dotenv').config();
+const path = require('path');
+
+
 module.exports = {
+  db: {
+    file: process.env.LEVEL_DB || path.join(__dirname, '..', 'db')
+  },
   ws: {
     port: process.env.WS_PORT || 8080 
   },
