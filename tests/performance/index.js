@@ -61,7 +61,7 @@ module.exports = (ctx) => {
     await rabbitService.start();
     await rabbitService.addBind('app_eth.transaction.*');
 
-    await Promise.map(_.range(1, 1000), async (x) => {
+    await Promise.map(_.range(1, 100), async (x) => {
       await sendMessage(ctx);
     });
 
@@ -88,12 +88,12 @@ module.exports = (ctx) => {
     const socketServer = new SocketServer(httpServer);
     await socketServer.start();
 
-    const clients = await Promise.map(_.range(1, 1000), async (x) => {
+    const clients = await Promise.map(_.range(1, 100), async (x) => {
       return await startClient();
     });
 
-    expect(clients.length).to.equal(1000);
-    expect(socketServer._connections).to.equal(1000);
+    expect(clients.length).to.equal(100);
+    expect(socketServer._connections).to.equal(100);
 
     await Promise.map(socketServer._connections, async (conn) => {
       return socketServer.send(conn.id, 'abba', 'message');
@@ -118,11 +118,11 @@ module.exports = (ctx) => {
 
     let store = new BindStore();
 
-    await Promise.map(_.range(1, 1000), async (r) => {
+    await Promise.map(_.range(1, 100), async (r) => {
       await store.addBind(r, 'abba');
     });
 
-    await Promise.map(_.range(1, 1000), async (r) => {
+    await Promise.map(_.range(1, 100), async (r) => {
       await store.delBind(r, 'abba');
     });
 
@@ -142,7 +142,7 @@ module.exports = (ctx) => {
 
     await Promise.all([
       (async () => {
-        await Promise.map(_.range(1, 1000), async (number) => {
+        await Promise.map(_.range(1, 100), async (number) => {
           const client = await startClient(number);
           await new Promise(res => {
             client.onUnpackedMessage.addListener(async (getData) => {
@@ -155,7 +155,7 @@ module.exports = (ctx) => {
       })(),
       (async () => {
         await Promise.delay(5000);
-        await Promise.map(_.range(1, 1000), async (number) => {
+        await Promise.map(_.range(1, 100), async (number) => {
           await sendMessage(ctx, number);
         });
       })()
