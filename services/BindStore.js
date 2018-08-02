@@ -5,8 +5,8 @@
  */
 const EventEmitter = require('events'),
   level = require('level'),
-  fs = require('fs');
-  getAvailRoutings = require('../util/getAvailRoutings'),
+  fs = require('fs'),
+  getAvailRoutings = require('../lib/getAvailRoutings'),
   _ = require('lodash');
 
 const ADD_BIND = 'new_bind';
