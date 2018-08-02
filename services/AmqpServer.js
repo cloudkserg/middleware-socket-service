@@ -1,21 +1,26 @@
-const EventEmitter = require('events');
+/**
+ * Copyright 2017–2018, LaborX PTY
+ * Licensed under the AGPL Version 3 license.
+ * @author Kirill Sergeev <cloudkserg11@gmail.com>
+ */
+const EventEmitter = require('events'),
+  amqp = require('amqplib');
 
 const MESSAGE = 'message';
 
 class AmqpServer extends EventEmitter
 {
-
-  constructor(config) {
-    this.uri  = config.uri
-    this.exchange = config.exchange
-    this.serviceName = config.serviceName
-    this.MESSAGE = MESSAGE
+  constructor (config) {
     super();
+    this.url  = config.url;
+    this.exchange = config.exchange;
+    this.serviceName = config.serviceName;
+    this.MESSAGE = MESSAGE;
   }
 
 
   async start () {
-    const amqpInstance = await amqp.connect(config.rabbit.url);
+    const amqpInstance = await amqp.connect(this.url);
 
     this.channel = await amqpInstance.createChannel();
     this.channel.on('close', () => {
@@ -24,19 +29,19 @@ class AmqpServer extends EventEmitter
   }
 
 
-  async addBind(routing) {
+  async addBind (routing) {
+    const queue = await this.channel.assertQueue(`${this.serviceName}.${routing}`);
     await this.channel.bindQueue(`${this.serviceName}.${routing}`, this.exchange, routing);
     this.channel.consume(`${this.serviceName}.${routing}`, async (data) => {  
-
       this.emit(this.MESSAGE, {
         routing: routing,
         data: JSON.parse(data.content)
-      })
-      channel.ack(data);
+      });
+      this.channel.ack(data);
     });
   }
 
-  delBind(routing) {
+  async delBind (routing) {
     await this.channel.cancel(`${this.serviceName}.${routing}`);
   }
 

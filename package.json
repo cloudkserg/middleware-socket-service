@@ -7,16 +7,32 @@
     "lib": "lib"
   },
   "dependencies": {
+    "amqplib": "^0.5.2",
     "bluebird": "^3.5.1",
+    "bunyan": "^1.8.12",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
     "http": "^0.0.0",
     "level": "^4.0.0",
     "lodash": "^4.17.10",
     "mongoose": "^5.2.6",
+    "request": "^2.87.0",
     "request-promise": "^4.2.2",
+    "require-all": "^3.0.0",
     "uniqid": "^5.0.3",
-    "websocket": "^1.0.26"
+    "websocket": "^1.0.26",
+    "websocket-as-promised": "^0.8.0",
+    "ws": "^6.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "bzmq": "^0.1.0",
+    "chai": "^4.1.1",
+    "eslint": "^4.4.1",
+    "eslint-plugin-chronobank": "github:chronobank/eslint-plugin-chronobank",
+    "memwatch-next": "^0.3.0",
+    "mocha": "^5.2.0"
+  },
   "scripts": {
     "lint": "node ./node_modules/eslint/bin/eslint.js -c .eslintrc.js --ext .js --fix --ignore-path .eslintignore .",
     "test": "node ./node_modules/mocha/bin/mocha -t 150000 tests"
