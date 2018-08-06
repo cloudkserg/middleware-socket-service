@@ -96,8 +96,7 @@ module.exports = (ctx) => {
         res();
       })),
       (async() => {
-        await ctx.amqp.channel.publish('events', routing, new Buffer(JSON.stringify(data))
-        );
+        await ctx.amqp.channel.publish('events', routing, new Buffer(JSON.stringify(data)));
       })()
     ]).timeout(20000);
 
@@ -284,7 +283,7 @@ module.exports = (ctx) => {
       })()
     ]).timeout(20000);
 
-    expect(result).to.equal(256);
+    expect(result[0]).to.equal(256);
 
     await client.close();
   });

@@ -36,7 +36,6 @@ const startClient = async (routing = 'app_eth.transaction.*') => {
   await client.sendPacked({type: 'SUBSCRIBE', routing: routing});
   await Promise.delay(4000);
 
-  client.onUnpackedMessage.addListener(getData => {});
   return client;
 };
 
@@ -88,14 +87,14 @@ module.exports = (ctx) => {
     const socketServer = new SocketServer(httpServer);
     await socketServer.start();
 
-    const clients = await Promise.map(_.range(1, 100), async (x) => {
+    const clients = await Promise.map(_.range(0, 100), async (x) => {
       return await startClient();
     });
 
     expect(clients.length).to.equal(100);
-    expect(socketServer._connections).to.equal(100);
+    expect(_.values(socketServer._connections).length).to.equal(100);
 
-    await Promise.map(socketServer._connections, async (conn) => {
+    await Promise.map(_.values(socketServer._connections), async (conn) => {
       return socketServer.send(conn.id, 'abba', 'message');
     });
 
@@ -116,7 +115,8 @@ module.exports = (ctx) => {
   it('validate bind store performance', async () => {
     let hd = new memwatch.HeapDiff();
 
-    let store = new BindStore();
+    let store = new BindStore(config.db);
+    await store.start();
 
     await Promise.map(_.range(1, 100), async (r) => {
       await store.addBind(r, 'abba');
@@ -143,27 +143,28 @@ module.exports = (ctx) => {
     await Promise.all([
       (async () => {
         await Promise.map(_.range(1, 100), async (number) => {
-          const client = await startClient(number);
+          const client = await startClient('routing' + number);
           await new Promise(res => {
             client.onUnpackedMessage.addListener(async (getData) => {
-              expect(getData.routing).to.equal(number);
+              expect(getData.routing).to.equal('routing' + number);
               res();
             });
           });
+          console.log('stop client' + number);
           await client.close();
         });
       })(),
       (async () => {
-        await Promise.delay(5000);
+        await Promise.delay(20000);
         await Promise.map(_.range(1, 100), async (number) => {
-          await sendMessage(ctx, number);
+          await sendMessage(ctx, 'routing' + number);
         });
       })()
     ]);
 
     end = Date.now();
 
-    expect(end - start).to.be.below(10000);
+    expect(end - start).to.be.below(50000);
     ctx.socketPid.kill();
   });
 

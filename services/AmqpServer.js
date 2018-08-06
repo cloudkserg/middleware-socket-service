@@ -30,11 +30,11 @@ class AmqpServer extends EventEmitter
 
 
   async addBind (routing) {
-    const queue = await this.channel.assertQueue(`${this.serviceName}.${routing}`);
+    await this.channel.assertQueue(`${this.serviceName}.${routing}`);
     await this.channel.bindQueue(`${this.serviceName}.${routing}`, this.exchange, routing);
-    this.channel.consume(`${this.serviceName}.${routing}`, async (data) => {  
+    this.channel.consume(`${this.serviceName}.${routing}`, async (data) => {
       this.emit(this.MESSAGE, {
-        routing: routing,
+        routing: data.fields.routingKey,
         data: JSON.parse(data.content)
       });
       this.channel.ack(data);

@@ -9,7 +9,6 @@ const EventEmitter = require('events'),
   Event = require('../events/Event'),
   AuthEvent = require('../events/AuthEvent'),
   bunyan = require('bunyan'),
-  _ = require('lodash'),
   log = bunyan.createLogger({name: 'socketService.socketServer'});
 
 
@@ -128,7 +127,7 @@ class SocketServer extends EventEmitter {
 
   handleClose (connection) {
     // eslint-disable-next-line
-    this.emit(CLOSE_TYPE, connection.id)
+    this.emit(CLOSE_TYPE, {connectionId: connection.id})
 
     delete this._connections[connection.id];
   }

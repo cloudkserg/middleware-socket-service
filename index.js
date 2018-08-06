@@ -90,8 +90,8 @@ const init = async () => {
    */
 
   amqpServer.on(amqpServer.MESSAGE, async (data) => {
-    await Promise.map(store.getConnections(data.routing), async (connectonId) => {
-      await server.send(connectonId, data.routing, data.data);
+    await Promise.map(store.getConnections(data.routing), async (connectionId) => {
+      await server.send(connectionId, data.routing, data.data);
     });
   });
 

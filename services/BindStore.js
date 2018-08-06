@@ -6,8 +6,10 @@
 const EventEmitter = require('events'),
   level = require('level'),
   fs = require('fs'),
+  Promise = require('bluebird'),
   getAvailRoutings = require('../lib/getAvailRoutings'),
-  _ = require('lodash');
+  _ = require('lodash'),
+  rimraf = require('rimraf');
 
 const ADD_BIND = 'new_bind';
 const DEL_BIND = 'del_bind';
@@ -15,7 +17,7 @@ const DEL_BIND = 'del_bind';
 
 const connKey = (connId) => `connection.${connId}`;
 const routingKey = (route) => `routing.${route}`;
-const routingFromKey = (key) => key.split('.')[1];
+const routingFromKey = (key) => key.split('.').slice(1).join('.');
 
 const bindFromRouting = (routing) => {
   let bindRouting = routing;
@@ -37,7 +39,9 @@ class BindStore extends EventEmitter
 
   async start () {
     if (fs.existsSync(this._file)) 
-      fs.unlinkSync(this._file);
+      await new Promise(res => {
+        rimraf(this._file, res);
+      });
     this.db = level(this._file);
   }
 
@@ -45,31 +49,34 @@ class BindStore extends EventEmitter
   async get (key) {
     return await new Promise((res, rej) => {
       this.db.get(key, function (err, value) {
-        if (err)
-          err.notFound ? res([]) : rej(err);
-        res(value);
+        if (err || value === undefined)
+          return err.notFound ? res([]) : rej(err);
+        res(JSON.parse(value));
       });
     });
   }
 
   async set (key, value) {
-    await this.db.put(key, value);
+    await this.db.put(key, JSON.stringify(value));
   }
 
   async del (key) {
     await this.db.del(key);
   }
 
-  async add (key, value, beforeCreate) {
+  async add (key, value, beforeCreate = () => {}) {
     const values = await this.get(key);
     if (values.length === 0)
       beforeCreate(key, values);
     
+    if (!values.push) 
+      throw new Error('not array in level by key ' + key + ' typeof = ' + typeof values);
+
     values.push(value);
     await this.set(key, _.uniq(values));
   }
 
-  async cut (key, value, afterDel) {
+  async cut (key, value, afterDel = () => {}) {
     const values = await this.get(key);
     if (values.length === 0)
       return;
@@ -117,11 +124,12 @@ class BindStore extends EventEmitter
   _emitBindIfNeed (key, connections) {
     if (connections.length === 0) {
       const routing = routingFromKey(key);
+
       const bind = bindFromRouting(routing);
     
       if (!this._binds.includes(bind)) {
         this._binds.push(bind);
-        this._emit(ADD_BIND, bind);
+        this.emit(ADD_BIND, bind);
       }
     }
   }

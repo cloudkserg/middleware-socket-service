@@ -9,6 +9,7 @@ const config = require('../config'),
   W3CWebSocket = require('websocket').w3cwebsocket,
   WebSocketAsPromised = require('websocket-as-promised'),
   expect = require('chai').expect,
+  rimraf = require('rimraf'),
   fs = require('fs'),
   Promise = require('bluebird');
 
@@ -29,7 +30,6 @@ const startClient = async (routing = 'app_eth.transaction.*') => {
   await client.sendPacked({type: 'SUBSCRIBE', routing: routing});
   await Promise.delay(4000);
 
-  client.onUnpackedMessage.addListener(getData => {});
   return client;
 };
 
@@ -41,24 +41,26 @@ const sendMessage = async (ctx, routing = 'app_eth.transaction.123') => {
 
 module.exports = (ctx) => {
   it('validate start with clear db', async () => {
-    fs.writeFileSync(config.db.file, 'Hello Node.js');
+    await new Promise(res => rimraf(config.db.file, res));
+    fs.mkdirSync(config.db.file);
+    fs.writeFileSync(config.db.file + '/CURRENT', 'Hello Node.js');
     ctx.socketPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
     await Promise.delay(10000);
 
     await Promise.all([
       (async () => {
-        const client = await startClient(1);
+        const client = await startClient('abba');
         await new Promise(res => {
           client.onUnpackedMessage.addListener(async (getData) => {
-            expect(getData.routing).to.equal(1);
+            expect(getData.routing).to.equal('abba');
             res();
           });
         });
         await client.close();
       })(),
       (async () => {
-        await Promise.delay(1000);
-        await sendMessage(ctx, 1);
+        await Promise.delay(5000);
+        await sendMessage(ctx, 'abba');
       })()
     ]);
 

@@ -19,6 +19,7 @@
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "require-all": "^3.0.0",
+    "rimraf": "^2.6.2",
     "uniqid": "^5.0.3",
     "websocket": "^1.0.26",
     "websocket-as-promised": "^0.8.0",
