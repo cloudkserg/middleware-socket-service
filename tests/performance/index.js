@@ -95,20 +95,24 @@ module.exports = (ctx) => {
     expect(_.values(socketServer._connections).length).to.equal(100);
 
     await Promise.map(_.values(socketServer._connections), async (conn) => {
-      return socketServer.send(conn.id, 'abba', 'message');
+      return await socketServer.send(conn.id, 'abba', 'message');
     });
 
-    await Promise.delay(60000);
+    await Promise.delay(6000);
 
 
     await Promise.map(clients, async (client) => {
       await client.close();
     })
 
+
     let diff = hd.end();
     let leakObjects = _.filter(diff.change.details, detail => detail.size_bytes / 1024 / 1024 > 3);
 
     expect(leakObjects.length).to.be.eq(0);
+    
+    await socketServer.shutdown();
+    await httpServer.close();
   });
 
 
@@ -142,23 +146,20 @@ module.exports = (ctx) => {
 
     await Promise.all([
       (async () => {
-        await Promise.map(_.range(1, 30), async (number) => {
+        await Promise.map(_.range(1, 50), async (number) => {
           const client = await startClient('routing' + number);
           await new Promise(res => {
             client.onUnpackedMessage.addListener(async (getData) => {
-              console.log('get' + number);
               expect(getData.routing).to.equal('routing' + number);
               res();
             });
           });
-          console.log('stop client' + number);
           await client.close();
         });
       })(),
       (async () => {
         await Promise.delay(10000);
-        await Promise.map(_.range(1, 30), async (number) => {
-          console.log('send' + number);
+        await Promise.map(_.range(1, 50), async (number) => {
           await sendMessage(ctx, 'routing' + number);
         });
       })()
