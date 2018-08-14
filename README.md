@@ -2,7 +2,7 @@
 
 Middleware service for translate message from amqp to native sockets
 
-### Installation
+### Installation 
 
 This module is a part of middleware services. You can install it in 2 ways:
 
