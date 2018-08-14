@@ -146,6 +146,7 @@ module.exports = (ctx) => {
           const client = await startClient('routing' + number);
           await new Promise(res => {
             client.onUnpackedMessage.addListener(async (getData) => {
+              console.log('get' + number);
               expect(getData.routing).to.equal('routing' + number);
               res();
             });
@@ -157,6 +158,7 @@ module.exports = (ctx) => {
       (async () => {
         await Promise.delay(10000);
         await Promise.map(_.range(1, 30), async (number) => {
+          console.log('send' + number);
           await sendMessage(ctx, 'routing' + number);
         });
       })()
