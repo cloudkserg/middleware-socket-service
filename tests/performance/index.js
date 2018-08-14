@@ -16,6 +16,7 @@ const config = require('../config'),
   SocketServer = require('../../services/SocketServer'),
   BindStore = require('../../services/BindStore'),
   expect = require('chai').expect,
+  amqp = require('amqplib'),
   http = require('http'),
   Promise = require('bluebird');
 
@@ -53,28 +54,6 @@ module.exports = (ctx) => {
     await models.profileModel.remove({});
   });
 
-  it('validate amqp service performance', async () => {
-
-    let hd = new memwatch.HeapDiff();
-    const rabbitService = new AmqpServer(config.rabbit);
-    await rabbitService.start();
-    await rabbitService.addBind('app_eth.transaction.*');
-
-    await Promise.map(_.range(1, 100), async (x) => {
-      await sendMessage(ctx);
-    });
-
-    await rabbitService.delBind('app_eth.transaction.*');
-    await Promise.delay(60000);
-
-    let diff = hd.end();
-    let leakObjects = _.filter(diff.change.details, detail => detail.size_bytes / 1024 / 1024 > 3);
-
-    expect(leakObjects.length).to.be.eq(0);
-
-  });
-
-
   it('validate socket service performance', async () => {
 
     let hd = new memwatch.HeapDiff();
@@ -87,12 +66,12 @@ module.exports = (ctx) => {
     const socketServer = new SocketServer(httpServer);
     await socketServer.start();
 
-    const clients = await Promise.map(_.range(0, 100), async (x) => {
+    const clients = await Promise.map(_.range(0, 10), async (x) => {
       return await startClient();
     });
 
-    expect(clients.length).to.equal(100);
-    expect(_.values(socketServer._connections).length).to.equal(100);
+    expect(clients.length).to.equal(10);
+    expect(_.values(socketServer._connections).length).to.equal(10);
 
     await Promise.map(_.values(socketServer._connections), async (conn) => {
       return await socketServer.send(conn.id, 'abba', 'message');
@@ -146,7 +125,7 @@ module.exports = (ctx) => {
 
     await Promise.all([
       (async () => {
-        await Promise.map(_.range(1, 50), async (number) => {
+        await Promise.map(_.range(1, 10), async (number) => {
           const client = await startClient('routing' + number);
           await new Promise(res => {
             client.onUnpackedMessage.addListener(async (getData) => {
@@ -159,7 +138,7 @@ module.exports = (ctx) => {
       })(),
       (async () => {
         await Promise.delay(10000);
-        await Promise.map(_.range(1, 50), async (number) => {
+        await Promise.map(_.range(1, 10), async (number) => {
           await sendMessage(ctx, 'routing' + number);
         });
       })()
@@ -170,7 +149,6 @@ module.exports = (ctx) => {
     expect(end - start).to.be.below(50000);
     ctx.socketPid.kill();
   });
-
 
 
 };

@@ -20,9 +20,9 @@ class AmqpServer extends EventEmitter
 
 
   async start () {
-    const amqpInstance = await amqp.connect(this.url);
+    this.amqpInstance = await amqp.connect(this.url);
 
-    this.channel = await amqpInstance.createChannel();
+    this.channel = await this.amqpInstance.createChannel();
     this.channel.on('close', () => {
       throw new Error('rabbitmq process has finished!');
     });
@@ -43,6 +43,10 @@ class AmqpServer extends EventEmitter
 
   async delBind (routing) {
     await this.channel.cancel(`${this.serviceName}.${routing}`);
+  }
+
+  async close () {
+    await this.amqpInstance.close();
   }
 
 }

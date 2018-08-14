@@ -45,6 +45,10 @@ class BindStore extends EventEmitter
     this.db = level(this._file);
   }
 
+  async close () {
+    await this.db.close();
+  }
+
 
   async get (key) {
     return await new Promise((res, rej) => {
