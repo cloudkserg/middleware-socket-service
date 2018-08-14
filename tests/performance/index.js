@@ -135,14 +135,14 @@ module.exports = (ctx) => {
 
   it('validate tx notification speed', async () => {
     ctx.socketPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
-    await Promise.delay(10000);
+    await Promise.delay(5000);
 
     let start = Date.now();
     let end;
 
     await Promise.all([
       (async () => {
-        await Promise.map(_.range(1, 100), async (number) => {
+        await Promise.map(_.range(1, 50), async (number) => {
           const client = await startClient('routing' + number);
           await new Promise(res => {
             client.onUnpackedMessage.addListener(async (getData) => {
@@ -155,8 +155,8 @@ module.exports = (ctx) => {
         });
       })(),
       (async () => {
-        await Promise.delay(20000);
-        await Promise.map(_.range(1, 100), async (number) => {
+        await Promise.delay(2000);
+        await Promise.map(_.range(1, 50), async (number) => {
           await sendMessage(ctx, 'routing' + number);
         });
       })()
