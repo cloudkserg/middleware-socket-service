@@ -135,7 +135,7 @@ module.exports = (ctx) => {
 
   it('validate tx notification speed', async () => {
     ctx.socketPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
-    await Promise.delay(5000);
+    await Promise.delay(3000);
 
     let start = Date.now();
     let end;
@@ -155,7 +155,7 @@ module.exports = (ctx) => {
         });
       })(),
       (async () => {
-        await Promise.delay(2000);
+        await Promise.delay(1000);
         await Promise.map(_.range(1, 50), async (number) => {
           await sendMessage(ctx, 'routing' + number);
         });
