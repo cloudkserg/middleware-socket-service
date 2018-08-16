@@ -5,6 +5,13 @@
  */
 
 module.exports = {
+  /**
+   * General Event structure
+   * 
+   * @param {String} connectionId 
+   * @param {mixed} data 
+   * @returns {Object}
+   */
   create (connectionId, data) {
     return {
       connectionId,

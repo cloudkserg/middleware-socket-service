@@ -8,8 +8,27 @@ const EventEmitter = require('events'),
 
 const MESSAGE = 'message';
 
+/**
+ * Class for subscribe on amqp events 
+ * from other middlewares
+ * listen only selected messages
+ * 
+ * @class AmqpServer
+ * @extends {EventEmitter}
+ */
 class AmqpServer extends EventEmitter
 {
+  /**
+   * 
+   * constructor
+   * @param {Object} config
+   * options are:
+   * url - url for rabbit
+   * exchange - name exchange in rabbit
+   * serviceName - service name of queue in rabbit
+   * 
+   * @memberOf AmqpServer
+   */
   constructor (config) {
     super();
     this.url  = config.url;
@@ -19,6 +38,11 @@ class AmqpServer extends EventEmitter
   }
 
 
+  /**
+   * function for start (connect to rabbit)
+   * 
+   * @memberOf AmqpServer
+   */
   async start () {
     this.amqpInstance = await amqp.connect(this.url);
 
@@ -29,6 +53,13 @@ class AmqpServer extends EventEmitter
   }
 
 
+  /**
+   * function to subscribe to this channel
+   * 
+   * @param {String} routing 
+   * 
+   * @memberOf AmqpServer
+   */
   async addBind (routing) {
     await this.channel.assertQueue(`${this.serviceName}.${routing}`);
     await this.channel.bindQueue(`${this.serviceName}.${routing}`, this.exchange, routing);
@@ -41,10 +72,23 @@ class AmqpServer extends EventEmitter
     });
   }
 
+  /**
+   * function to unsubscribe from this channel
+   * 
+   * @param {String} routing 
+   * 
+   * @memberOf AmqpServer
+   */
   async delBind (routing) {
     await this.channel.cancel(`${this.serviceName}.${routing}`);
   }
 
+  /**
+   * Function for close connection to rabbitmq
+   * 
+   * 
+   * @memberOf AmqpServer
+   */
   async close () {
     await this.amqpInstance.close();
   }

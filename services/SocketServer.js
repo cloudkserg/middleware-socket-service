@@ -18,8 +18,20 @@ const CLOSE_TYPE = 'CLOSE';
 const OPEN_TYPE = 'OPEN';
 const AUTH_TYPE = 'AUTH';
 
-
+/**
+ * Class for listen websocket connection
+ * and generate events on websocket events
+ * 
+ * @class SocketServer
+ * @extends {EventEmitter}
+ */
 class SocketServer extends EventEmitter {
+  /**
+   * Creates an instance of SocketServer.
+   * @param {HttpServer} httpServer as in Expressjs
+   * 
+   * @memberOf SocketServer
+   */
   constructor (httpServer) {
     super();
     this.httpServer = httpServer;
@@ -31,6 +43,11 @@ class SocketServer extends EventEmitter {
     this.AUTH_TYPE = AUTH_TYPE;
   }
 
+  /**
+   * function for up websocket server
+   * 
+   * @memberOf SocketServer
+   */
   start () {
     this.wsServer = new WebSocketServer({
       httpServer: this.httpServer,
@@ -61,7 +78,19 @@ class SocketServer extends EventEmitter {
     });
     log.info('successfully initialized');
   }
-	
+  
+  /**
+   * send message with data to connectionId about this routing
+   * 
+   * connectionId - id of socket connection
+   * routing - key for subscibe from sockets
+   * 
+   * @param {String} connectionId 
+   * @param {String} routing 
+   * @param {Object} data 
+   * 
+   * @memberOf SocketServer
+   */
   send (connectionId, routing, data) {
     setImmediate(() => {
       if (this._connections[connectionId])
@@ -72,13 +101,27 @@ class SocketServer extends EventEmitter {
     });
   }
 
+  /**
+   * send ok message to connecitonId
+   * 
+   * @param {String} connectionId 
+   * 
+   * @memberOf SocketServer
+   */
   sendOk (connectionId) {
     setImmediate(() => {
       if (this._connections[connectionId])
         this._connections[connectionId].sendUTF(JSON.stringify({ok: true}));
     });
   }
-	
+  
+  /**
+   * get types of avail messages for this class
+   * 
+   * @returns []
+   * 
+   * @memberOf SocketServer
+   */
   getTypes () {
     return [
       SUBSCRIBE_TYPE,
@@ -87,6 +130,14 @@ class SocketServer extends EventEmitter {
     ];
   }
 
+  /**
+   * function for handle message from webscoket
+   * 
+   * @param {Object} connection 
+   * @param {mixed} message 
+   * 
+   * @memberOf SocketServer
+   */
   handleMessage (connection, message) {
     if (message.type === 'utf8') 
       try {
@@ -107,6 +158,13 @@ class SocketServer extends EventEmitter {
     
   }
 
+  /**
+   * close selected websocket connection
+   * 
+   * @param {String} connectionId 
+   * 
+   * @memberOf SocketServer
+   */
   closeConnection (connectionId) {
     if (this._connections[connectionId]) 
       this._connections[connectionId].close();
@@ -114,6 +172,13 @@ class SocketServer extends EventEmitter {
   }
 
 
+  /**
+   * handle open connection
+   * 
+   * @param {Object} connection 
+   * 
+   * @memberOf SocketServer
+   */
   handleOpen (connection) {
     this._connections[connection.id] = connection;
     this.emit(OPEN_TYPE, {
@@ -121,10 +186,24 @@ class SocketServer extends EventEmitter {
     });
   }
 
+  /**
+   * Handle error on connection
+   * 
+   * @param {Object} connection 
+   * 
+   * @memberOf SocketServer
+   */
   handleError (connection) {
     this.handleClose(connection);
   }
 
+  /**
+   * Handle close on connection
+   * 
+   * @param {Object} connection 
+   * 
+   * @memberOf SocketServer
+   */
   handleClose (connection) {
     // eslint-disable-next-line
     this.emit(CLOSE_TYPE, {connectionId: connection.id})
@@ -132,6 +211,12 @@ class SocketServer extends EventEmitter {
     delete this._connections[connection.id];
   }
 
+  /**
+   * Shutdown websocket server
+   * 
+   * 
+   * @memberOf SocketServer
+   */
   shutdown () {
     this.wsServer.shutDown();
   }

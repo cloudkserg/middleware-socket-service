@@ -19,4 +19,4 @@ const Profile = new mongoose.Schema({
   addresses: {type: mongoose.Schema.Types.Mixed}
 });
 
-module.exports = mongoose.model(`${config.mongo.collectionPrefix}Profile`, Profile);
+module.exports = () => mongoose.model(`${config.mongo.collectionPrefix}Profile`, Profile);

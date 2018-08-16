@@ -4,6 +4,13 @@
  * @author Kirill Sergeev <cloudkserg11@gmail.com>
  */
 module.exports = {
+  /**
+   * Authentication Event structure
+   * 
+   * @param {String} connectionId 
+   * @param {mixed} data 
+   *  @returns {Object}
+   */
   create (connectionId, data) {
     return {
       connectionId,
