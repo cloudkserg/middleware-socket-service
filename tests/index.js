@@ -46,10 +46,9 @@ describe('core/socketService', function () {
 
   // describe('block', () => blockTests(ctx));
 
-  describe('performance', () => performanceTests(ctx));
-
-  describe('fuzz', () => fuzzTests(ctx));
 
   describe('features', () => featuresTests(ctx));
+  describe('fuzz', () => fuzzTests(ctx));
+  describe('performance', () => performanceTests(ctx));
 
 });
