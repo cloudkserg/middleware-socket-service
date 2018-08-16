@@ -11,7 +11,7 @@ const http = require('http'),
   Promise = require('bluebird'),
   config = require('./config'),
   bunyan = require('bunyan'),
-  models = require('../models'),
+  models = require('./models'),
   mongoose = require('mongoose'),
   log = bunyan.createLogger({name: 'socketService.index'});
 

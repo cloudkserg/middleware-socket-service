@@ -28,7 +28,7 @@ module.exports = (ctx) => {
     await models.profileModel.remove({});
 
     ctx.socketPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
-    await Promise.delay(10000);
+    await Promise.delay(5000);
   });
 
 
