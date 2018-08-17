@@ -76,7 +76,7 @@ const expect = require('chai').expect,
     await server.addBind('test');
     await server.delBind('test');
     await server.addBind(routing);
-
+    await Promise.delay(1000);
     await Promise.all([
       (async () =>{
         await ctx.amqp.channel.publish(config.rabbit.exchange, 'test', new Buffer(JSON.stringify({
