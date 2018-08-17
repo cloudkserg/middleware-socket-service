@@ -31,24 +31,22 @@ describe('core/socketService', function () {
     ctx.amqp.channel = await ctx.amqp.instance.createChannel();
     await ctx.amqp.channel.assertExchange(config.rabbit.exchange, 'topic', {durable: false});
 
-    // ctx.laborxPid = spawn('node', ['tests/utils/laborxProxy.js'], {
-    //   env: process.env, stdio: 'ignore'
-    // });
-    // await Promise.delay(10000);
+    ctx.laborxPid = spawn('node', ['tests/utils/laborxProxy.js'], {
+      env: process.env, stdio: 'ignore'
+    });
+    await Promise.delay(10000);
   });
 
   after(async () => {
     mongoose.disconnect();
     await ctx.amqp.instance.close();
-    // ctx.laborxPid.kill();
+    ctx.laborxPid.kill();
   });
 
 
   describe('block', () => blockTests(ctx));
-
-
-  // describe('features', () => featuresTests(ctx));
-  // describe('fuzz', () => fuzzTests(ctx));
-  // describe('performance', () => performanceTests(ctx));
+  describe('features', () => featuresTests(ctx));
+  describe('fuzz', () => fuzzTests(ctx));
+  describe('performance', () => performanceTests(ctx));
 
 });

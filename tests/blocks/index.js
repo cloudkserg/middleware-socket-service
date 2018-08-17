@@ -9,8 +9,8 @@ const amqpTests = require('./services/AmqpServer'),
   socketTests = require('./services/SocketServer');
 
 module.exports = (ctx) => {
-  //describe('services/AmqpServer', () => amqpTests(ctx));
-  //describe('services/AuthService', () => authTests(ctx));
-  //describe('services/BindStore', () => storeTests(ctx));
+  describe('services/AmqpServer', () => amqpTests(ctx));
+  describe('services/AuthService', () => authTests(ctx));
+  describe('services/BindStore', () => storeTests(ctx));
   describe('services/SocketServer', () => socketTests(ctx));
 };
