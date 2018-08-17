@@ -13,7 +13,7 @@ const config = require('../config'),
   fuzzTests = require('./fuzz'),
   performanceTests = require('./performance'),
   featuresTests = require('./features'),
-  //blockTests = require('./blocks'),
+  blockTests = require('./blocks'),
   Promise = require('bluebird'),
   mongoose = require('mongoose'),
   amqp = require('amqplib'),
@@ -29,26 +29,26 @@ describe('core/socketService', function () {
     ctx.amqp = {};
     ctx.amqp.instance = await amqp.connect(config.rabbit.url);
     ctx.amqp.channel = await ctx.amqp.instance.createChannel();
-    await ctx.amqp.channel.assertExchange('events', 'topic', {durable: false});
+    await ctx.amqp.channel.assertExchange(config.rabbit.exchange, 'topic', {durable: false});
 
-    ctx.laborxPid = spawn('node', ['tests/utils/laborxProxy.js'], {
-      env: process.env, stdio: 'ignore'
-    });
-    await Promise.delay(10000);
+    // ctx.laborxPid = spawn('node', ['tests/utils/laborxProxy.js'], {
+    //   env: process.env, stdio: 'ignore'
+    // });
+    // await Promise.delay(10000);
   });
 
   after(async () => {
     mongoose.disconnect();
     await ctx.amqp.instance.close();
-    ctx.laborxPid.kill();
+    // ctx.laborxPid.kill();
   });
 
 
-  // describe('block', () => blockTests(ctx));
+  describe('block', () => blockTests(ctx));
 
 
-  describe('features', () => featuresTests(ctx));
-  describe('fuzz', () => fuzzTests(ctx));
-  describe('performance', () => performanceTests(ctx));
+  // describe('features', () => featuresTests(ctx));
+  // describe('fuzz', () => fuzzTests(ctx));
+  // describe('performance', () => performanceTests(ctx));
 
 });

@@ -25,7 +25,7 @@ class AmqpServer extends EventEmitter
    * options are:
    * url - url for rabbit
    * exchange - name exchange in rabbit
-   * serviceName - service name of queue in rabbit
+   * serviceName - service name of  created queues for binding in rabbit
    * 
    * @memberOf AmqpServer
    */
@@ -47,9 +47,10 @@ class AmqpServer extends EventEmitter
     this.amqpInstance = await amqp.connect(this.url);
 
     this.channel = await this.amqpInstance.createChannel();
-    this.channel.on('close', () => {
+    this._onClosed = () => {
       throw new Error('rabbitmq process has finished!');
-    });
+    };
+    this.channel.on('close', this._onClosed);
   }
 
 
@@ -90,6 +91,8 @@ class AmqpServer extends EventEmitter
    * @memberOf AmqpServer
    */
   async close () {
+    if (this._onClosed && this.channel)
+      this.channel.removeListener('close', this._onClosed);
     await this.amqpInstance.close();
   }
 

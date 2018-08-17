@@ -85,7 +85,7 @@ class BindStore extends EventEmitter
    * 
    * @memberOf BindStore
    */
-  async get (key) {
+  async _get (key) {
     return await new Promise((res, rej) => {
       this.db.get(key, function (err, value) {
         if (err || value === undefined)
@@ -103,7 +103,7 @@ class BindStore extends EventEmitter
    * 
    * @memberOf BindStore
    */
-  async set (key, value) {
+  async _set (key, value) {
     await this.db.put(key, JSON.stringify(value));
   }
 
@@ -114,7 +114,7 @@ class BindStore extends EventEmitter
    * 
    * @memberOf BindStore
    */
-  async del (key) {
+  async _del (key) {
     await this.db.del(key);
   }
 
@@ -127,8 +127,8 @@ class BindStore extends EventEmitter
    * 
    * @memberOf BindStore
    */
-  async add (key, value, beforeCreate = () => {}) {
-    const values = await this.get(key);
+  async _add (key, value, beforeCreate = () => {}) {
+    const values = await this._get(key);
     if (values.length === 0)
       beforeCreate(key, values);
     
@@ -136,7 +136,7 @@ class BindStore extends EventEmitter
       throw new Error('not array in level by key ' + key + ' typeof = ' + typeof values);
 
     values.push(value);
-    await this.set(key, _.uniq(values));
+    await this._set(key, _.uniq(values));
   }
 
   /**
@@ -149,17 +149,17 @@ class BindStore extends EventEmitter
    * 
    * @memberOf BindStore
    */
-  async cut (key, value, afterDel = () => {}) {
-    const values = await this.get(key);
+  async _cut (key, value, afterDel = () => {}) {
+    const values = await this._get(key);
     if (values.length === 0)
       return;
 
     const filterValues = _.filter(values, v => v !== value);
     if (filterValues.length === 0) {
-      await this.del(key);
+      await this._del(key);
       afterDel(key, filterValues);
     } else 
-      await this.set(key, filterValues);
+      await this._set(key, filterValues);
   }
 
   /**
@@ -175,7 +175,7 @@ class BindStore extends EventEmitter
     const connectionIds = await Promise.mapSeries(
       getAvailRoutings(routing), 
       async (routing) => {
-        return await this.get(routingKey(routing));
+        return await this._get(routingKey(routing));
       }
     );
     return _.chain(connectionIds)
@@ -194,8 +194,8 @@ class BindStore extends EventEmitter
    * @memberOf BindStore
    */
   async addBind (connectionId, routing) {
-    await this.add(routingKey(routing), connectionId, this._emitBindIfNeed.bind(this));
-    await this.add(connKey(connectionId), routing);
+    await this._add(routingKey(routing), connectionId, this._emitBindIfNeed.bind(this));
+    await this._add(connKey(connectionId), routing);
   }
 
   /**
@@ -206,9 +206,9 @@ class BindStore extends EventEmitter
    * @memberOf BindStore
    */
   async delBindAll (delId) {
-    _.each(
-      await this.get(delId), 
-      async (routing) => await this.delBind(delId, routing).bind(this)
+    const data = await this._get(connKey(delId));
+    await Promise.mapSeries(data, 
+      async (routing) => await this.delBind(delId, routing)
     );
   }
 
@@ -222,8 +222,8 @@ class BindStore extends EventEmitter
    * @memberOf BindStore
    */
   async delBind (connectionId, routing) {
-    await this.cut(routingKey(routing), connectionId);
-    await this.cut(connKey(connectionId), routing);
+    await this._cut(routingKey(routing), connectionId);
+    await this._cut(connKey(connectionId), routing);
   }
 
 

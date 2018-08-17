@@ -37,6 +37,7 @@ class AuthService extends EventEmitter
     this.UNAUTH = UNAUTH;
     this.AUTH = AUTH;
     this.AUTH_OK = AUTH_OK;
+    this.TIMEOUT = TIMEOUT;
     this.timeouts = {};
 
   }
